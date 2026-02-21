@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Helpdesk Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="scene-bg"></div>
+<div class="page">
+    <header class="header glass panel-3d">
+        <div>
+            <h1>College Helpdesk</h1>
+            <p th:text="'Welcome, ' + ${currentUser.fullName} + ' (' + ${currentUser.role} + ')'">Welcome</p>
+        </div>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn-secondary">Logout</button>
+        </form>
+    </header>
+
+    <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+    <section class="stats-grid" th:if="${isManagement}">
+        <article class="card panel-3d hover-lift">
+            <h3>Total</h3>
+            <p class="kpi" th:text="${statusSummary['SUBMITTED'] + statusSummary['ASSIGNED'] + statusSummary['IN_PROGRESS'] + statusSummary['RESOLVED'] + statusSummary['CLOSED']}">0</p>
+        </article>
+        <article class="card panel-3d hover-lift">
+            <h3>Submitted</h3>
+            <p class="kpi" th:text="${statusSummary['SUBMITTED']}">0</p>
+        </article>
+        <article class="card panel-3d hover-lift">
+            <h3>In Progress</h3>
+            <p class="kpi" th:text="${statusSummary['IN_PROGRESS']}">0</p>
+        </article>
+        <article class="card panel-3d hover-lift">
+            <h3>Resolved + Closed</h3>
+            <p class="kpi" th:text="${statusSummary['RESOLVED'] + statusSummary['CLOSED']}">0</p>
+        </article>
+    </section>
+
+    <section class="reports-grid" th:if="${isManagement}">
+        <article class="card panel-3d">
+            <h2>Department Load</h2>
+            <div class="bar-list">
+                <div class="bar-row" th:each="d : ${departmentStats}">
+                    <span class="label" th:text="${d.department}">Department</span>
+                    <div class="bar-track">
+                        <div class="bar-fill" th:style="'width:' + (${d.total} * 12) + 'px'"></div>
+                    </div>
+                    <span class="count" th:text="${d.total}">0</span>
+                </div>
+            </div>
+        </article>
+        <article class="card panel-3d">
+            <h2>Monthly Trend</h2>
+            <div class="bar-list">
+                <div class="bar-row" th:each="m : ${monthlyTrend}">
+                    <span class="label" th:text="${m.period}">YYYY-MM</span>
+                    <div class="bar-track">
+                        <div class="bar-fill blue" th:style="'width:' + (${m.total} * 12) + 'px'"></div>
+                    </div>
+                    <span class="count" th:text="${m.total}">0</span>
+                </div>
+            </div>
+        </article>
+    </section>
+
+    <section class="grid" th:if="${isStudent}">
+        <article class="card panel-3d">
+            <h2>Submit New Complaint</h2>
+            <form th:action="@{/student/complaints}" th:object="${complaintForm}" method="post" enctype="multipart/form-data" class="form-grid">
+                <div>
+                    <label>Title</label>
+                    <input type="text" th:field="*{title}" placeholder="Ex: Hostel WiFi not working">
+                    <small class="error-text" th:errors="*{title}"></small>
+                </div>
+                <div>
+                    <label>Priority</label>
+                    <select th:field="*{priority}">
+                        <option th:each="p : ${priorities}" th:value="${p}" th:text="${p}"></option>
+                    </select>
+                </div>
+                <div>
+                    <label>Category</label>
+                    <select th:field="*{category}">
+                        <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"></option>
+                    </select>
+                </div>
+                <div class="full-width">
+                    <label>Description</label>
+                    <textarea rows="5" th:field="*{description}" placeholder="Describe your issue"></textarea>
+                    <small class="error-text" th:errors="*{description}"></small>
+                </div>
+                <div class="full-width">
+                    <label>Attachments (optional)</label>
+                    <input type="file" name="files" multiple>
+                </div>
+                <button type="submit">Submit Complaint</button>
+            </form>
+        </article>
+    </section>
+
+    <section class="card panel-3d complaint-board">
+        <h2>Complaints Board</h2>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Complaint</th>
+                    <th>Student</th>
+                    <th>Owner</th>
+                    <th>Status</th>
+                    <th>SLA</th>
+                    <th>Actions & Timeline</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${#lists.isEmpty(complaints)}">
+                    <td colspan="7">No complaints found.</td>
+                </tr>
+                <tr th:each="c : ${complaints}" class="hover-lift-row">
+                    <td th:text="${c.id}"></td>
+                    <td>
+                        <div class="strong" th:text="${c.title}"></div>
+                        <small th:text="${c.description}"></small>
+                        <div>
+                            <span class="chip" th:text="${c.category}"></span>
+                            <span class="chip" th:text="${c.priority}"></span>
+                            <span class="chip danger" th:if="${c.escalated}">ESCALATED</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div th:text="${c.student.fullName}"></div>
+                        <small th:text="${c.student.department}"></small>
+                    </td>
+                    <td th:text="${c.assignedTo != null ? c.assignedTo.fullName : 'Not Assigned'}"></td>
+                    <td><span class="chip status" th:text="${c.status}"></span></td>
+                    <td>
+                        <small th:text="${#temporals.format(c.escalationDueAt, 'dd MMM yyyy HH:mm')}"></small>
+                    </td>
+                    <td>
+                        <div class="action-stack" th:if="${isManagement}">
+                            <form th:action="@{/management/complaints/{id}/assign(id=${c.id})}" method="post">
+                                <select name="staffUserId" required>
+                                    <option value="" selected disabled>Select staff</option>
+                                    <option th:each="s : ${staffUsers}" th:value="${s.id}" th:text="${s.fullName}"></option>
+                                </select>
+                                <button type="submit">Assign</button>
+                            </form>
+                        </div>
+                        <div class="action-stack" th:if="${isStaff or isManagement}">
+                            <form th:action="@{/staff/complaints/{id}/status(id=${c.id})}" method="post">
+                                <select name="status">
+                                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == c.status}"></option>
+                                </select>
+                                <button type="submit">Update</button>
+                            </form>
+                        </div>
+
+                        <form th:action="@{/complaints/{id}/notes(id=${c.id})}" method="post" class="note-form">
+                            <input type="text" name="message" placeholder="Add progress note">
+                            <button type="submit">Add Note</button>
+                        </form>
+
+                        <form th:action="@{/complaints/{id}/attachments(id=${c.id})}" method="post" enctype="multipart/form-data" class="note-form compact">
+                            <input type="file" name="file" required>
+                            <button type="submit">Upload File</button>
+                        </form>
+
+                        <div class="timeline">
+                            <p class="timeline-title">Notes</p>
+                            <div th:each="n : ${notesMap[c.id]}" class="note-item">
+                                <small th:text="${n.author.fullName + ' - ' + #temporals.format(n.createdAt, 'dd MMM HH:mm')}"></small>
+                                <div th:text="${n.message}"></div>
+                            </div>
+                        </div>
+
+                        <div class="timeline">
+                            <p class="timeline-title">Attachments</p>
+                            <div th:if="${#lists.isEmpty(attachmentsMap[c.id])}"><small>No files</small></div>
+                            <div th:each="a : ${attachmentsMap[c.id]}" class="attach-item">
+                                <a th:href="@{/attachments/{id}(id=${a.id})}" th:text="${a.originalFileName}">file</a>
+                                <small th:text="${a.uploadedBy.fullName}"></small>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

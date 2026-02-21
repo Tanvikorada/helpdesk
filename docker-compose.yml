@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: college-helpdesk-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: tanvi9606
+      MYSQL_DATABASE: student_helpdesk
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: college-helpdesk-app
+    restart: unless-stopped
+    environment:
+      DB_USERNAME: root
+      DB_PASSWORD: tanvi9606
+      MAIL_HOST: ""
+      MAIL_PORT: "587"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_FROM: "no-reply@college-helpdesk.local"
+      APP_UPLOAD_DIR: /app/uploads
+    depends_on:
+      - mysql
+    ports:
+      - "8081:8080"
+    volumes:
+      - uploads_data:/app/uploads
+
+volumes:
+  mysql_data:
+  uploads_data:

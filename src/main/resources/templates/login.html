@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - College Helpdesk</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="scene-bg"></div>
+<div class="auth-page">
+    <div class="auth-card panel-3d">
+        <h1>College Helpdesk Login</h1>
+        <p>Sign in with your role-based account.</p>
+
+        <div class="flash success" th:if="${param.logout}">Logged out successfully.</div>
+        <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="flash error" th:if="${param.error}">Invalid username or password.</div>
+
+        <form th:action="@{/login}" method="post" class="form-grid">
+            <div>
+                <label>Username</label>
+                <input type="text" name="username" required>
+            </div>
+            <div>
+                <label>Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+
+        <p class="meta">New student? <a th:href="@{/register}">Register here</a></p>
+        <p class="meta">Demo: admin/admin123, dean/dean123, staff1/staff123, student1/student123</p>
+    </div>
+</div>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>
