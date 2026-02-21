@@ -40,17 +40,6 @@ $env:MAIL_PASSWORD="your_app_password"
 $env:MAIL_FROM="helpdesk@college.edu"
 ```
 
-## GitHub Push
-```powershell
-cd "C:\Users\Tanvi\OneDrive\Desktop\studenthd"
-git init
-git add .
-git commit -m "Professional college helpdesk"
-git branch -M main
-git remote add origin https://github.com/<your-username>/<repo-name>.git
-git push -u origin main
-```
-
 ## Deploy Options
 
 ### Option 1: Docker (recommended)
@@ -65,18 +54,3 @@ App: `http://localhost:8081/login`
 3. Build jar: `mvn -DskipTests package`
 4. Run: `java -jar target/student-helpdesk-1.0.0.jar --server.port=8080`
 5. Put Nginx in front (optional) + SSL.
-
-### Option 3: Render/Railway/Heroku-like
-- Use included `Procfile`.
-- Set environment variables in platform settings.
-- Ensure MySQL service is reachable.
-
-## Key Files
-- Backend workflow: `src/main/java/com/studenthelpdesk/service/HelpdeskService.java`
-- Scheduler: `src/main/java/com/studenthelpdesk/service/EscalationScheduler.java`
-- Notifications: `src/main/java/com/studenthelpdesk/service/NotificationService.java`
-- File storage: `src/main/java/com/studenthelpdesk/service/FileStorageService.java`
-- Dashboard UI: `src/main/resources/templates/dashboard.html`
-- Animations: `src/main/resources/static/js/app.js`
-- Styles: `src/main/resources/static/css/style.css`
-- Docker: `Dockerfile`, `docker-compose.yml`
