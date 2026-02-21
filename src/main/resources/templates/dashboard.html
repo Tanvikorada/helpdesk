@@ -3,79 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>College Helpdesk Dashboard</title>
+    <title>Helpdesk Control Room</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<div class="scene-bg"></div>
-<div class="page">
-    <header class="header glass panel-3d">
-        <div>
-            <h1>College Helpdesk</h1>
-            <p th:text="'Welcome, ' + ${currentUser.fullName} + ' (' + ${currentUser.role} + ')'">Welcome</p>
+<div class="noise"></div>
+<div class="orb orb-a"></div>
+<div class="orb orb-b"></div>
+
+<div class="app-shell">
+    <aside class="side-panel tilt-card">
+        <div class="brand">
+            <p class="brand-kicker">Campus Ops</p>
+            <h1>Helpdesk</h1>
+            <p th:text="${currentUser.fullName}"></p>
+            <p class="role-pill" th:text="${currentUser.role}"></p>
         </div>
-        <form th:action="@{/logout}" method="post">
-            <button type="submit" class="btn-secondary">Logout</button>
+
+        <div class="mini-stats" th:if="${isManagement}">
+            <div class="mini-box">
+                <span>Submitted</span>
+                <strong th:text="${statusSummary['SUBMITTED']}">0</strong>
+            </div>
+            <div class="mini-box">
+                <span>In Progress</span>
+                <strong th:text="${statusSummary['IN_PROGRESS']}">0</strong>
+            </div>
+            <div class="mini-box">
+                <span>Resolved</span>
+                <strong th:text="${statusSummary['RESOLVED'] + statusSummary['CLOSED']}">0</strong>
+            </div>
+        </div>
+
+        <form th:action="@{/logout}" method="post" class="logout-wrap">
+            <button type="submit" class="btn ghost">Logout</button>
         </form>
-    </header>
+    </aside>
 
-    <div class="flash success" th:if="${successMessage}" th:text="${successMessage}"></div>
-    <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
-
-    <section class="stats-grid" th:if="${isManagement}">
-        <article class="card panel-3d hover-lift">
-            <h3>Total</h3>
-            <p class="kpi" th:text="${statusSummary['SUBMITTED'] + statusSummary['ASSIGNED'] + statusSummary['IN_PROGRESS'] + statusSummary['RESOLVED'] + statusSummary['CLOSED']}">0</p>
-        </article>
-        <article class="card panel-3d hover-lift">
-            <h3>Submitted</h3>
-            <p class="kpi" th:text="${statusSummary['SUBMITTED']}">0</p>
-        </article>
-        <article class="card panel-3d hover-lift">
-            <h3>In Progress</h3>
-            <p class="kpi" th:text="${statusSummary['IN_PROGRESS']}">0</p>
-        </article>
-        <article class="card panel-3d hover-lift">
-            <h3>Resolved + Closed</h3>
-            <p class="kpi" th:text="${statusSummary['RESOLVED'] + statusSummary['CLOSED']}">0</p>
-        </article>
-    </section>
-
-    <section class="reports-grid" th:if="${isManagement}">
-        <article class="card panel-3d">
-            <h2>Department Load</h2>
-            <div class="bar-list">
-                <div class="bar-row" th:each="d : ${departmentStats}">
-                    <span class="label" th:text="${d.department}">Department</span>
-                    <div class="bar-track">
-                        <div class="bar-fill" th:style="'width:' + (${d.total} * 12) + 'px'"></div>
-                    </div>
-                    <span class="count" th:text="${d.total}">0</span>
-                </div>
+    <main class="main-panel">
+        <section class="hero tilt-card">
+            <div>
+                <h2>Complaint Command Center</h2>
+                <p>Track, assign, resolve, and escalate complaints with clear ownership.</p>
             </div>
-        </article>
-        <article class="card panel-3d">
-            <h2>Monthly Trend</h2>
-            <div class="bar-list">
-                <div class="bar-row" th:each="m : ${monthlyTrend}">
-                    <span class="label" th:text="${m.period}">YYYY-MM</span>
-                    <div class="bar-track">
-                        <div class="bar-fill blue" th:style="'width:' + (${m.total} * 12) + 'px'"></div>
-                    </div>
-                    <span class="count" th:text="${m.total}">0</span>
-                </div>
+            <div class="chips-row">
+                <span class="chip" th:if="${isStudent}">Student View</span>
+                <span class="chip" th:if="${isStaff}">Staff View</span>
+                <span class="chip" th:if="${isManagement}">Management View</span>
             </div>
-        </article>
-    </section>
+        </section>
 
-    <section class="grid" th:if="${isStudent}">
-        <article class="card panel-3d">
-            <h2>Submit New Complaint</h2>
-            <form th:action="@{/student/complaints}" th:object="${complaintForm}" method="post" enctype="multipart/form-data" class="form-grid">
+        <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+
+        <section class="panel-grid" th:if="${isManagement}">
+            <article class="tile tilt-card">
+                <h3>Department Pressure</h3>
+                <div class="meter" th:each="d : ${departmentStats}">
+                    <label th:text="${d.department}"></label>
+                    <div class="meter-track"><div class="meter-fill" th:style="'width:' + (${d.total} * 10) + 'px'"></div></div>
+                    <span th:text="${d.total}"></span>
+                </div>
+            </article>
+            <article class="tile tilt-card">
+                <h3>Monthly Intake</h3>
+                <div class="meter" th:each="m : ${monthlyTrend}">
+                    <label th:text="${m.period}"></label>
+                    <div class="meter-track"><div class="meter-fill alt" th:style="'width:' + (${m.total} * 10) + 'px'"></div></div>
+                    <span th:text="${m.total}"></span>
+                </div>
+            </article>
+        </section>
+
+        <section class="submit-panel tilt-card" th:if="${isStudent}">
+            <h3>Raise New Complaint</h3>
+            <form th:action="@{/student/complaints}" th:object="${complaintForm}" method="post" enctype="multipart/form-data" class="form-pro">
                 <div>
                     <label>Title</label>
-                    <input type="text" th:field="*{title}" placeholder="Ex: Hostel WiFi not working">
-                    <small class="error-text" th:errors="*{title}"></small>
+                    <input type="text" th:field="*{title}" placeholder="Eg: Lab system not booting">
+                    <small th:errors="*{title}"></small>
                 </div>
                 <div>
                     <label>Priority</label>
@@ -89,111 +98,101 @@
                         <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}"></option>
                     </select>
                 </div>
-                <div class="full-width">
+                <div class="full">
                     <label>Description</label>
-                    <textarea rows="5" th:field="*{description}" placeholder="Describe your issue"></textarea>
-                    <small class="error-text" th:errors="*{description}"></small>
+                    <textarea rows="4" th:field="*{description}" placeholder="Give full context"></textarea>
+                    <small th:errors="*{description}"></small>
                 </div>
-                <div class="full-width">
-                    <label>Attachments (optional)</label>
+                <div class="full">
+                    <label>Attachments</label>
                     <input type="file" name="files" multiple>
                 </div>
-                <button type="submit">Submit Complaint</button>
+                <button type="submit" class="btn">Submit Complaint</button>
             </form>
-        </article>
-    </section>
+        </section>
 
-    <section class="card panel-3d complaint-board">
-        <h2>Complaints Board</h2>
-        <div class="table-wrap">
-            <table>
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Complaint</th>
-                    <th>Student</th>
-                    <th>Owner</th>
-                    <th>Status</th>
-                    <th>SLA</th>
-                    <th>Actions & Timeline</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:if="${#lists.isEmpty(complaints)}">
-                    <td colspan="7">No complaints found.</td>
-                </tr>
-                <tr th:each="c : ${complaints}" class="hover-lift-row">
-                    <td th:text="${c.id}"></td>
-                    <td>
-                        <div class="strong" th:text="${c.title}"></div>
-                        <small th:text="${c.description}"></small>
-                        <div>
-                            <span class="chip" th:text="${c.category}"></span>
-                            <span class="chip" th:text="${c.priority}"></span>
-                            <span class="chip danger" th:if="${c.escalated}">ESCALATED</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div th:text="${c.student.fullName}"></div>
-                        <small th:text="${c.student.department}"></small>
-                    </td>
-                    <td th:text="${c.assignedTo != null ? c.assignedTo.fullName : 'Not Assigned'}"></td>
-                    <td><span class="chip status" th:text="${c.status}"></span></td>
-                    <td>
-                        <small th:text="${#temporals.format(c.escalationDueAt, 'dd MMM yyyy HH:mm')}"></small>
-                    </td>
-                    <td>
-                        <div class="action-stack" th:if="${isManagement}">
-                            <form th:action="@{/management/complaints/{id}/assign(id=${c.id})}" method="post">
-                                <select name="staffUserId" required>
-                                    <option value="" selected disabled>Select staff</option>
-                                    <option th:each="s : ${staffUsers}" th:value="${s.id}" th:text="${s.fullName}"></option>
-                                </select>
-                                <button type="submit">Assign</button>
-                            </form>
-                        </div>
-                        <div class="action-stack" th:if="${isStaff or isManagement}">
-                            <form th:action="@{/staff/complaints/{id}/status(id=${c.id})}" method="post">
-                                <select name="status">
-                                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == c.status}"></option>
-                                </select>
-                                <button type="submit">Update</button>
-                            </form>
-                        </div>
+        <section class="board tilt-card">
+            <div class="board-head">
+                <h3>Live Complaint Queue</h3>
+                <p>Every role sees only authorized records.</p>
+            </div>
 
-                        <form th:action="@{/complaints/{id}/notes(id=${c.id})}" method="post" class="note-form">
-                            <input type="text" name="message" placeholder="Add progress note">
-                            <button type="submit">Add Note</button>
-                        </form>
+            <div class="list" th:if="${#lists.isEmpty(complaints)}">
+                <div class="empty">No complaints available right now.</div>
+            </div>
 
-                        <form th:action="@{/complaints/{id}/attachments(id=${c.id})}" method="post" enctype="multipart/form-data" class="note-form compact">
-                            <input type="file" name="file" required>
-                            <button type="submit">Upload File</button>
-                        </form>
+            <article class="case-card" th:each="c : ${complaints}">
+                <header>
+                    <div>
+                        <h4 th:text="${'#' + c.id + ' - ' + c.title}"></h4>
+                        <p th:text="${c.description}"></p>
+                    </div>
+                    <div class="case-tags">
+                        <span class="chip" th:text="${c.category}"></span>
+                        <span class="chip" th:text="${c.priority}"></span>
+                        <span class="chip status" th:text="${c.status}"></span>
+                        <span class="chip danger" th:if="${c.escalated}">Escalated</span>
+                    </div>
+                </header>
 
-                        <div class="timeline">
-                            <p class="timeline-title">Notes</p>
-                            <div th:each="n : ${notesMap[c.id]}" class="note-item">
-                                <small th:text="${n.author.fullName + ' - ' + #temporals.format(n.createdAt, 'dd MMM HH:mm')}"></small>
-                                <div th:text="${n.message}"></div>
-                            </div>
+                <div class="case-meta">
+                    <span th:text="${'Student: ' + c.student.fullName}"></span>
+                    <span th:text="${'Assigned: ' + (c.assignedTo != null ? c.assignedTo.fullName : 'Unassigned')}"></span>
+                    <span th:text="${'SLA: ' + #temporals.format(c.escalationDueAt, 'dd MMM HH:mm')}"></span>
+                </div>
+
+                <div class="actions-wrap">
+                    <form th:if="${isManagement}" th:action="@{/management/complaints/{id}/assign(id=${c.id})}" method="post" class="inline-form">
+                        <select name="staffUserId" required>
+                            <option value="" selected disabled>Assign staff</option>
+                            <option th:each="s : ${staffUsers}" th:value="${s.id}" th:text="${s.fullName}"></option>
+                        </select>
+                        <button type="submit" class="btn">Assign</button>
+                    </form>
+
+                    <form th:if="${isStaff or isManagement}" th:action="@{/staff/complaints/{id}/status(id=${c.id})}" method="post" class="inline-form">
+                        <select name="status">
+                            <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}" th:selected="${st == c.status}"></option>
+                        </select>
+                        <button type="submit" class="btn">Update</button>
+                    </form>
+
+                    <form th:action="@{/complaints/{id}/notes(id=${c.id})}" method="post" class="inline-form fullrow">
+                        <input type="text" name="message" placeholder="Write progress note">
+                        <button type="submit" class="btn">Add Note</button>
+                    </form>
+
+                    <form th:action="@{/complaints/{id}/attachments(id=${c.id})}" method="post" enctype="multipart/form-data" class="inline-form fullrow">
+                        <input type="file" name="file" required>
+                        <button type="submit" class="btn">Upload</button>
+                    </form>
+                </div>
+
+                <div class="timeline-grid">
+                    <section>
+                        <h5>Notes</h5>
+                        <div class="note" th:each="n : ${notesMap[c.id]}">
+                            <small th:text="${n.author.fullName + ' · ' + #temporals.format(n.createdAt, 'dd MMM HH:mm')}"></small>
+                            <p th:text="${n.message}"></p>
                         </div>
+                    </section>
 
-                        <div class="timeline">
-                            <p class="timeline-title">Attachments</p>
-                            <div th:if="${#lists.isEmpty(attachmentsMap[c.id])}"><small>No files</small></div>
-                            <div th:each="a : ${attachmentsMap[c.id]}" class="attach-item">
-                                <a th:href="@{/attachments/{id}(id=${a.id})}" th:text="${a.originalFileName}">file</a>
-                                <small th:text="${a.uploadedBy.fullName}"></small>
-                            </div>
+                    <section>
+                        <h5>Attachments</h5>
+                        <div class="note" th:if="${#lists.isEmpty(attachmentsMap[c.id])}">
+                            <small>No files</small>
                         </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
+                        <div class="note" th:each="a : ${attachmentsMap[c.id]}">
+                            <a th:href="@{/attachments/{id}(id=${a.id})}" th:text="${a.originalFileName}"></a>
+                            <small th:text="${'by ' + a.uploadedBy.fullName}"></small>
+                        </div>
+                    </section>
+                </div>
+            </article>
+        </section>
+    </main>
 </div>
+
 <script th:src="@{/js/app.js}"></script>
 </body>
 </html>

@@ -3,49 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Registration</title>
+    <title>Register - Helpdesk</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-<div class="scene-bg"></div>
-<div class="auth-page">
-    <div class="auth-card panel-3d">
-        <h1>Student Registration</h1>
-        <p>Create your account to submit and track complaints.</p>
+<div class="noise"></div>
+<div class="orb orb-a"></div>
+<div class="orb orb-b"></div>
+<div class="auth-screen">
+    <section class="auth-shell tilt-card">
+        <h1>Student Onboarding</h1>
+        <p>Create your helpdesk account.</p>
 
-        <div class="flash error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
-        <form th:action="@{/register}" th:object="${registerForm}" method="post" class="form-grid">
+        <form th:action="@{/register}" th:object="${registerForm}" method="post" class="form-pro">
             <div>
                 <label>Full Name</label>
                 <input type="text" th:field="*{fullName}" required>
-                <small class="error-text" th:errors="*{fullName}"></small>
+                <small th:errors="*{fullName}"></small>
             </div>
             <div>
                 <label>Username</label>
                 <input type="text" th:field="*{username}" required>
-                <small class="error-text" th:errors="*{username}"></small>
+                <small th:errors="*{username}"></small>
             </div>
             <div>
                 <label>Email</label>
                 <input type="email" th:field="*{email}" required>
-                <small class="error-text" th:errors="*{email}"></small>
+                <small th:errors="*{email}"></small>
             </div>
             <div>
                 <label>Department</label>
                 <input type="text" th:field="*{department}" required>
-                <small class="error-text" th:errors="*{department}"></small>
+                <small th:errors="*{department}"></small>
             </div>
             <div>
                 <label>Password</label>
                 <input type="password" th:field="*{password}" required>
-                <small class="error-text" th:errors="*{password}"></small>
+                <small th:errors="*{password}"></small>
             </div>
-            <button type="submit">Register</button>
+            <button type="submit" class="btn">Register</button>
         </form>
 
         <p class="meta">Already registered? <a th:href="@{/login}">Login</a></p>
-    </div>
+    </section>
 </div>
 <script th:src="@{/js/app.js}"></script>
 </body>
