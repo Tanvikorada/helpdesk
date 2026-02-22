@@ -1,0 +1,10 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "mvn -DskipTests clean package"
+
+[deploy]
+startCommand = "java -jar target/student-helpdesk-1.0.0.jar --server.port=$PORT"
+healthcheckPath = "/login"
+healthcheckTimeout = 180
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
