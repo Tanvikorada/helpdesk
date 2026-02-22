@@ -6,19 +6,20 @@
     <title>Helpdesk Control Room</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 <body>
 <div class="noise"></div>
-<div class="orb orb-a"></div>
-<div class="orb orb-b"></div>
+<div class="glow glow-a"></div>
+<div class="glow glow-b"></div>
 
 <div class="app-shell">
     <aside class="side-panel tilt-card">
         <div class="brand">
             <p class="brand-kicker">Campus Ops</p>
-            <h1>Helpdesk</h1>
+            <h1>Student Helpdesk</h1>
             <p th:text="${currentUser.fullName}"></p>
             <p class="role-pill" th:text="${currentUser.role}"></p>
         </div>
@@ -47,12 +48,22 @@
         <section class="hero tilt-card">
             <div>
                 <h2>Complaint Command Center</h2>
-                <p>Track, assign, resolve, and escalate complaints with clear ownership.</p>
+                <p>Track, assign, resolve, and escalate with clear ownership across student, faculty, staff, and management.</p>
+                <div class="chips-row">
+                    <span class="chip" th:if="${isStudent}">Student View</span>
+                    <span class="chip" th:if="${isFaculty}">Faculty View</span>
+                    <span class="chip" th:if="${isStaff and !isFaculty}">Staff View</span>
+                    <span class="chip" th:if="${isManagement}">Management View</span>
+                </div>
             </div>
-            <div class="chips-row">
-                <span class="chip" th:if="${isStudent}">Student View</span>
-                <span class="chip" th:if="${isStaff}">Staff View</span>
-                <span class="chip" th:if="${isManagement}">Management View</span>
+            <div class="hero-model-wrap">
+                <model-viewer class="hero-model"
+                              src="https://modelviewer.dev/shared-assets/models/Astronaut.glb"
+                              alt="3D campus support model"
+                              camera-controls
+                              auto-rotate
+                              shadow-intensity="1"
+                              exposure="1.2"></model-viewer>
             </div>
         </section>
 
@@ -68,6 +79,7 @@
                     <span th:text="${d.total}"></span>
                 </div>
             </article>
+
             <article class="tile tilt-card">
                 <h3>Monthly Intake</h3>
                 <div class="meter" th:each="m : ${monthlyTrend}">
@@ -75,6 +87,40 @@
                     <div class="meter-track"><div class="meter-fill alt" th:style="'width:' + (${m.total} * 10) + 'px'"></div></div>
                     <span th:text="${m.total}"></span>
                 </div>
+            </article>
+
+            <article class="tile tilt-card">
+                <h3>Create Team Account</h3>
+                <form th:action="@{/management/users}" th:object="${managementUserForm}" method="post" class="form-pro single-col">
+                    <div>
+                        <label>Full Name</label>
+                        <input type="text" th:field="*{fullName}" required>
+                    </div>
+                    <div>
+                        <label>Username</label>
+                        <input type="text" th:field="*{username}" required>
+                    </div>
+                    <div>
+                        <label>Email</label>
+                        <input type="email" th:field="*{email}" required>
+                    </div>
+                    <div>
+                        <label>Department</label>
+                        <input type="text" th:field="*{department}" required>
+                    </div>
+                    <div>
+                        <label>Password</label>
+                        <input type="password" th:field="*{password}" required>
+                    </div>
+                    <div>
+                        <label>Role</label>
+                        <select th:field="*{role}" required>
+                            <option value="" selected disabled>Select role</option>
+                            <option th:each="r : ${provisionRoles}" th:value="${r}" th:text="${r}"></option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Create User</button>
+                </form>
             </article>
         </section>
 
@@ -144,8 +190,8 @@
                 <div class="actions-wrap">
                     <form th:if="${isManagement}" th:action="@{/management/complaints/{id}/assign(id=${c.id})}" method="post" class="inline-form">
                         <select name="staffUserId" required>
-                            <option value="" selected disabled>Assign staff</option>
-                            <option th:each="s : ${staffUsers}" th:value="${s.id}" th:text="${s.fullName}"></option>
+                            <option value="" selected disabled>Assign faculty/staff</option>
+                            <option th:each="s : ${staffUsers}" th:value="${s.id}" th:text="${s.fullName + ' (' + s.role + ')'}"></option>
                         </select>
                         <button type="submit" class="btn">Assign</button>
                     </form>
@@ -172,7 +218,7 @@
                     <section>
                         <h5>Notes</h5>
                         <div class="note" th:each="n : ${notesMap[c.id]}">
-                            <small th:text="${n.author.fullName + ' · ' + #temporals.format(n.createdAt, 'dd MMM HH:mm')}"></small>
+                            <small th:text="${n.author.fullName + ' Â· ' + #temporals.format(n.createdAt, 'dd MMM HH:mm')}"></small>
                             <p th:text="${n.message}"></p>
                         </div>
                     </section>

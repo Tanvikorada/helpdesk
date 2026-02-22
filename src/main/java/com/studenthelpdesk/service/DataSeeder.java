@@ -22,6 +22,7 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) {
         seedIfMissing("admin", "admin123", "Helpdesk Manager", "admin@college.edu", "Administration", UserRole.MANAGEMENT);
         seedIfMissing("dean", "dean123", "Academic Dean", "dean@college.edu", "Administration", UserRole.MANAGEMENT);
+        seedIfMissing("faculty1", "faculty123", "Faculty Advisor", "faculty1@college.edu", "Academics", UserRole.FACULTY);
         seedIfMissing("staff1", "staff123", "Facilities Staff", "staff1@college.edu", "Facilities", UserRole.STAFF);
         seedIfMissing("staff2", "staff123", "IT Support Staff", "staff2@college.edu", "IT Services", UserRole.STAFF);
         seedIfMissing("student1", "student123", "Demo Student", "student1@college.edu", "Computer Science", UserRole.STUDENT);

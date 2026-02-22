@@ -1,6 +1,7 @@
 package com.studenthelpdesk.controller;
 
 import com.studenthelpdesk.dto.ComplaintForm;
+import com.studenthelpdesk.dto.ManagementUserForm;
 import com.studenthelpdesk.model.ComplaintStatus;
 import com.studenthelpdesk.model.UserRole;
 import com.studenthelpdesk.service.FileStorageService;
@@ -51,11 +52,16 @@ public class DashboardController {
         if (!model.containsAttribute("complaintForm")) {
             model.addAttribute("complaintForm", new ComplaintForm());
         }
+        if (!model.containsAttribute("managementUserForm")) {
+            model.addAttribute("managementUserForm", new ManagementUserForm());
+        }
 
         model.addAttribute("currentUser", user);
         model.addAttribute("isStudent", user.getRole() == UserRole.STUDENT);
-        model.addAttribute("isStaff", user.getRole() == UserRole.STAFF);
+        model.addAttribute("isFaculty", user.getRole() == UserRole.FACULTY);
+        model.addAttribute("isStaff", user.getRole() == UserRole.STAFF || user.getRole() == UserRole.FACULTY);
         model.addAttribute("isManagement", user.getRole() == UserRole.MANAGEMENT);
+        model.addAttribute("provisionRoles", new UserRole[]{UserRole.FACULTY, UserRole.STAFF, UserRole.MANAGEMENT});
         model.addAttribute("complaints", complaints);
         model.addAttribute("priorities", com.studenthelpdesk.model.TicketPriority.values());
         model.addAttribute("categories", com.studenthelpdesk.model.ComplaintCategory.values());
@@ -84,7 +90,26 @@ public class DashboardController {
         try {
             helpdeskService.createComplaint(principal.getName(), complaintForm, files);
             redirectAttributes.addFlashAttribute("successMessage", "Complaint submitted successfully.");
-        } catch (IllegalArgumentException ex) {
+        } catch (RuntimeException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/dashboard";
+    }
+
+    @PostMapping("/management/users")
+    public String createUserByManagement(@Valid ManagementUserForm managementUserForm,
+                                         BindingResult bindingResult,
+                                         RedirectAttributes redirectAttributes,
+                                         Principal principal) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Please complete all required user fields.");
+            return "redirect:/dashboard";
+        }
+
+        try {
+            helpdeskService.registerUserByManagement(principal.getName(), managementUserForm);
+            redirectAttributes.addFlashAttribute("successMessage", "Team member account created.");
+        } catch (RuntimeException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
         return "redirect:/dashboard";
@@ -145,7 +170,7 @@ public class DashboardController {
         try {
             helpdeskService.addAttachment(principal.getName(), id, file);
             redirectAttributes.addFlashAttribute("successMessage", "Attachment uploaded.");
-        } catch (IllegalArgumentException ex) {
+        } catch (RuntimeException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
         return "redirect:/dashboard";

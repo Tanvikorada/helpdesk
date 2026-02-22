@@ -6,7 +6,7 @@
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const rotateY = ((x / rect.width) - 0.5) * 7;
+      const rotateY = ((x / rect.width) - 0.5) * 8;
       const rotateX = (0.5 - (y / rect.height)) * 6;
       card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-3px)`;
     });
@@ -21,9 +21,24 @@
     el.style.opacity = '0';
     el.style.transform = 'translateY(16px)';
     setTimeout(() => {
-      el.style.transition = 'opacity .45s ease, transform .45s ease';
+      el.style.transition = 'opacity .5s ease, transform .5s ease';
       el.style.opacity = '1';
       el.style.transform = 'translateY(0)';
     }, 70 * i);
   });
+
+  const modelWrap = document.querySelector('.hero-model-wrap');
+  if (modelWrap) {
+    modelWrap.addEventListener('mousemove', (e) => {
+      const rect = modelWrap.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      const ry = (x - 0.5) * 14;
+      const rx = (0.5 - y) * 10;
+      modelWrap.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    });
+    modelWrap.addEventListener('mouseleave', () => {
+      modelWrap.style.transform = 'perspective(900px) rotateY(-9deg)';
+    });
+  }
 })();

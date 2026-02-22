@@ -2,6 +2,7 @@ package com.studenthelpdesk.service;
 
 import com.studenthelpdesk.dto.ComplaintForm;
 import com.studenthelpdesk.dto.DepartmentCount;
+import com.studenthelpdesk.dto.ManagementUserForm;
 import com.studenthelpdesk.dto.MonthlyPoint;
 import com.studenthelpdesk.dto.RegisterForm;
 import com.studenthelpdesk.model.AppUser;
@@ -18,6 +19,7 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +58,7 @@ public class HelpdeskService {
 
     @Transactional
     public void registerStudent(RegisterForm form) {
-        if (appUserRepository.existsByUsernameIgnoreCase(form.getUsername())) {
-            throw new IllegalArgumentException("Username already exists.");
-        }
-        if (appUserRepository.existsByEmailIgnoreCase(form.getEmail())) {
-            throw new IllegalArgumentException("Email already exists.");
-        }
+        validateUniqueUser(form.getUsername(), form.getEmail());
 
         AppUser student = new AppUser();
         student.setUsername(form.getUsername().trim());
@@ -71,6 +68,30 @@ public class HelpdeskService {
         student.setDepartment(form.getDepartment().trim());
         student.setRole(UserRole.STUDENT);
         appUserRepository.save(student);
+    }
+
+    @Transactional
+    public void registerUserByManagement(String managerUsername, ManagementUserForm form) {
+        AppUser manager = getUserByUsername(managerUsername);
+        if (manager.getRole() != UserRole.MANAGEMENT) {
+            throw new IllegalArgumentException("Only management can create users.");
+        }
+
+        UserRole role = form.getRole();
+        if (role == null || role == UserRole.STUDENT) {
+            throw new IllegalArgumentException("Role must be FACULTY, STAFF, or MANAGEMENT.");
+        }
+
+        validateUniqueUser(form.getUsername(), form.getEmail());
+
+        AppUser user = new AppUser();
+        user.setUsername(form.getUsername().trim());
+        user.setPassword(passwordEncoder.encode(form.getPassword()));
+        user.setFullName(form.getFullName().trim());
+        user.setEmail(form.getEmail().trim());
+        user.setDepartment(form.getDepartment().trim());
+        user.setRole(role);
+        appUserRepository.save(user);
     }
 
     @Transactional
@@ -108,7 +129,7 @@ public class HelpdeskService {
         if (user.getRole() == UserRole.MANAGEMENT) {
             return complaintRepository.findAllByOrderByCreatedAtDesc();
         }
-        if (user.getRole() == UserRole.STAFF) {
+        if (isHandlerRole(user.getRole())) {
             return complaintRepository.findAllByAssignedToOrderByCreatedAtDesc(user);
         }
         return complaintRepository.findAllByStudentOrderByCreatedAtDesc(user);
@@ -151,7 +172,9 @@ public class HelpdeskService {
     }
 
     public List<AppUser> getStaffUsers() {
-        return appUserRepository.findAllByRoleOrderByFullNameAsc(UserRole.STAFF);
+        return appUserRepository.findAllByRoleIn(List.of(UserRole.STAFF, UserRole.FACULTY)).stream()
+            .sorted(Comparator.comparing(AppUser::getFullName, String.CASE_INSENSITIVE_ORDER))
+            .toList();
     }
 
     public AppUser getUserByUsername(String username) {
@@ -175,8 +198,8 @@ public class HelpdeskService {
         AppUser staff = appUserRepository.findById(staffUserId)
             .orElseThrow(() -> new IllegalArgumentException("Staff member not found"));
 
-        if (staff.getRole() != UserRole.STAFF) {
-            throw new IllegalArgumentException("Selected user is not staff.");
+        if (!isHandlerRole(staff.getRole())) {
+            throw new IllegalArgumentException("Selected user must be STAFF or FACULTY.");
         }
 
         complaint.setAssignedTo(staff);
@@ -198,7 +221,7 @@ public class HelpdeskService {
         Complaint complaint = getComplaint(complaintId);
 
         boolean canUpdate = actor.getRole() == UserRole.MANAGEMENT
-            || (actor.getRole() == UserRole.STAFF && complaint.getAssignedTo() != null
+            || (isHandlerRole(actor.getRole()) && complaint.getAssignedTo() != null
             && complaint.getAssignedTo().getId().equals(actor.getId()));
 
         if (!canUpdate) {
@@ -372,5 +395,18 @@ public class HelpdeskService {
             .filter(e -> !e.isEmpty())
             .distinct()
             .collect(Collectors.toList());
+    }
+
+    private void validateUniqueUser(String username, String email) {
+        if (appUserRepository.existsByUsernameIgnoreCase(username)) {
+            throw new IllegalArgumentException("Username already exists.");
+        }
+        if (appUserRepository.existsByEmailIgnoreCase(email)) {
+            throw new IllegalArgumentException("Email already exists.");
+        }
+    }
+
+    private boolean isHandlerRole(UserRole role) {
+        return role == UserRole.STAFF || role == UserRole.FACULTY;
     }
 }

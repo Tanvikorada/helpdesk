@@ -36,9 +36,9 @@ public class SecurityConfig {
         http
             .authenticationProvider(authenticationProvider())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login", "/register", "/css/**").permitAll()
+                .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
                 .requestMatchers("/management/**").hasRole("MANAGEMENT")
-                .requestMatchers("/staff/**").hasAnyRole("STAFF", "MANAGEMENT")
+                .requestMatchers("/staff/**").hasAnyRole("STAFF", "FACULTY", "MANAGEMENT")
                 .requestMatchers("/student/**").hasRole("STUDENT")
                 .anyRequest().authenticated()
             )

@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "mvn -DskipTests clean package"
 
 [deploy]
-startCommand = "java -jar app.jar"
+startCommand = "java -jar target/student-helpdesk-*.jar"
 healthcheckPath = "/login"
 healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
