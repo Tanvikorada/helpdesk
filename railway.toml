@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "mvn -DskipTests clean package"
 
 [deploy]
-startCommand = "java -jar app.jar --server.port=$PORT"
+startCommand = "java -jar app.jar"
 healthcheckPath = "/login"
 healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
