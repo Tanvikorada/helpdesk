@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "mvn -DskipTests clean package"
 
 [deploy]
-startCommand = "sh -c 'JAR=$(ls target/*.jar | grep -v \".jar.original\" | head -n 1); echo \"Starting $JAR\"; java -jar \"$JAR\" --server.port=$PORT'"
+startCommand = "sh -c 'mvn -DskipTests clean package && JAR=$(ls target/*.jar | grep -v \".jar.original\" | head -n 1) && echo \"Starting $JAR\" && java -jar \"$JAR\" --server.port=$PORT'"
 healthcheckPath = "/login"
 healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
