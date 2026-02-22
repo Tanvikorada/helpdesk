@@ -3,7 +3,7 @@ builder = "NIXPACKS"
 buildCommand = "mvn -DskipTests clean package"
 
 [deploy]
-startCommand = "java -jar target/student-helpdesk-1.0.0.jar --server.port=$PORT"
+startCommand = "sh -c 'JAR=$(ls target/*.jar | grep -v \".jar.original\" | head -n 1); echo \"Starting $JAR\"; java -jar \"$JAR\" --server.port=$PORT'"
 healthcheckPath = "/login"
 healthcheckTimeout = 180
 restartPolicyType = "ON_FAILURE"
